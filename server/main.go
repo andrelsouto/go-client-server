@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"io"
-	"log"
 	"net/http"
 	"time"
 )
@@ -107,7 +107,7 @@ func SaveQuote(quote *ExchangeValue) error {
 	if err != nil {
 		return err
 	}
-	contextTimeoutHandle(ctx)
+	contextTimeoutHandle(ctx, "Database timeout")
 	return nil
 }
 
@@ -141,7 +141,7 @@ func GetQuotation() (*ExchangeValue, error) {
 	if err != nil {
 		return nil, err
 	}
-	contextTimeoutHandle(ctx)
+	contextTimeoutHandle(ctx, "Request timeout")
 	defer response.Body.Close()
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -155,10 +155,10 @@ func GetQuotation() (*ExchangeValue, error) {
 	return &quote.ExchangeValue, nil
 }
 
-func contextTimeoutHandle(ctx context.Context) {
+func contextTimeoutHandle(ctx context.Context, message string) {
 
 	select {
 	case <-ctx.Done():
-		log.Println("Time of execution exceeded")
+		fmt.Println(message)
 	}
 }
